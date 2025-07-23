@@ -1,48 +1,26 @@
-// Stub for Last.fm API library
-export interface LastFmTag {
-  name: string
-  count: number
-}
+/**
+ * @file index.ts
+ * @description Main entry point for lastfm-api-lib
+ * @author Caleb Price
+ * @version 1.0.0
+ * @date 2025-07-23
+ */
 
-export interface LastFmArtist {
-  name: string
-  mbid?: string
-  url: string
-}
+// Main API class
+export { LastFm } from './main'
 
-export interface LastFmAlbum {
-  name: string
-  artist: string
-  mbid?: string
-  url: string
-}
+// HTTP client for advanced usage
+export { LastFmHttpClient } from './httpClient'
 
-export interface LastFmTrack {
-  name: string
-  artist: string
-  album?: string
-  mbid?: string
-  url: string
-}
+// All endpoint classes
+export { ArtistEndpoints } from './endpoints/artist'
+export { AlbumEndpoints } from './endpoints/album'
+export { TrackEndpoints } from './endpoints/track'
+export { TagEndpoints } from './endpoints/tag'
+export { ChartEndpoints } from './endpoints/chart'
 
-export interface LastFmApiResponse<T> {
-  data: T
-  success: boolean
-  error?: string
-}
+// All types
+export * from './types'
 
-export default class LastFm {
-  constructor(apiKey: string) {
-    // Stub implementation
-  }
-
-  async getArtistInfo(artist: string) {
-    // Stub implementation
-    return { data: null, success: false, error: 'Not implemented' }
-  }
-
-  async getAlbumInfo(artist: string, album: string) {
-    // Stub implementation
-    return { data: null, success: false, error: 'Not implemented' }
-  }
-}
+// Default export
+export { LastFm as default } from './main'
