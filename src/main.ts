@@ -45,12 +45,15 @@ export class LastFm {
   public chart!: ChartEndpoints
 
   constructor(apiKey?: string) {
+    // Try to get API key from environment if not provided
+    const resolvedApiKey = apiKey || this.getApiKeyFromEnvironment()
+    
     // Validate API key format if provided
-    if (apiKey && !this.isValidApiKeyFormat(apiKey)) {
+    if (resolvedApiKey && !this.isValidApiKeyFormat(resolvedApiKey)) {
       console.warn('LastFm: API key format appears invalid')
     }
 
-    this.httpClient = new LastFmHttpClient(apiKey)
+    this.httpClient = new LastFmHttpClient(resolvedApiKey)
 
     // Initialize endpoint groups using optimized pattern
     this.initializeEndpoints()
@@ -63,6 +66,70 @@ export class LastFm {
     for (const [name, EndpointClass] of Object.entries(ENDPOINT_CLASSES)) {
       ;(this as any)[name] = new EndpointClass(this.httpClient)
     }
+  }
+
+  /**
+   * Get API key from environment variables
+   * Works with multiple build tools and environments
+   */
+  private getApiKeyFromEnvironment(): string | undefined {
+    // Environment variable names to try (in order of preference)
+    const envNames = [
+      'LASTFM_API_KEY',           // Generic
+      'VITE_LASTFM_API_KEY',      // Vite
+      'REACT_APP_LASTFM_API_KEY', // Create React App
+      'NEXT_PUBLIC_LASTFM_API_KEY', // Next.js
+    ]
+    
+    for (const envName of envNames) {
+      let value: string | undefined
+
+      // Method 1: Try globalThis for environment access
+      try {
+        // Check for globalThis.process.env (Node.js environments)
+        if ((globalThis as any).process?.env) {
+          value = (globalThis as any).process.env[envName]
+          if (value) {
+            console.log(`LastFm: Using API key from process.env.${envName}`)
+            return value
+          }
+        }
+      } catch (e) {
+        // Ignore and try next method
+      }
+
+      // Method 2: Try runtime environment injection
+      try {
+        if ((globalThis as any).__ENV__) {
+          value = (globalThis as any).__ENV__[envName]
+          if (value) {
+            console.log(`LastFm: Using API key from globalThis.__ENV__.${envName}`)
+            return value
+          }
+        }
+      } catch (e) {
+        // Ignore and try next method
+      }
+
+      // Method 3: Try window environment (browser)
+      try {
+        if (typeof window !== 'undefined' && (window as any).__ENV__) {
+          value = (window as any).__ENV__[envName]
+          if (value) {
+            console.log(`LastFm: Using API key from window.__ENV__.${envName}`)
+            return value
+          }
+        }
+      } catch (e) {
+        // Ignore and continue
+      }
+    }
+    
+    // Note: import.meta.env detection is intentionally omitted here
+    // as it causes build issues. Client applications should pass the
+    // API key explicitly: new LastFm(import.meta.env.VITE_LASTFM_API_KEY)
+    
+    return undefined
   }
 
   /**
